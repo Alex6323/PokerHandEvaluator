@@ -62,6 +62,4 @@ fn main() {
     // Highcard
     let hand = Hand::new("KcQsJhTh8s2d3d");
     println!("{} => {}", hand, Evaluation::decode(evaluate(&hand)));
-
-    
 }

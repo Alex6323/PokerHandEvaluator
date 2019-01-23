@@ -225,7 +225,7 @@ mod tests {
     fn test_two_pair_with_triples() {
         let hand = Hand::new("AdAsKdKhJsJh4d");
         assert_eq!(
-            "TwoPair AK J", 
+            "TwoPair A K J", 
             Evaluation::decode(evaluate(&hand)).to_string()
         );
     }
