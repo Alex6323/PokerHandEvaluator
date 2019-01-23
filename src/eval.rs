@@ -31,7 +31,7 @@ impl Evaluation {
         if self.major != NULL {
             RANKS[self.major]
         } else {
-            "-"
+            ""
         }
     }
 
@@ -39,7 +39,7 @@ impl Evaluation {
         if self.minor != NULL {
             RANKS[self.minor]
         } else {
-            "-"
+            ""
         }
     }
 
@@ -50,10 +50,6 @@ impl Evaluation {
                 s.push_str(&RANKS[12 - i]);
             }
         }
-        if s.is_empty() {
-            s.push_str("-");
-        }
-
         s
     }
 }
@@ -62,11 +58,11 @@ impl Display for Evaluation {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "{comb} {major}{minor} {kickers}",
+            "{comb}{major}{minor}{kickers}",
             comb = self.get_comb(),
-            major = self.get_major(),
-            minor = self.get_minor(),
-            kickers = self.get_kickers()
+            major = if self.major != NULL { format!(" {}", self.get_major()) } else { String::new() },
+            minor = if self.minor != NULL { format!(" {}", self.get_minor()) } else { String::new() },
+            kickers = if self.kickers != 0 { format!(" {}", self.get_kickers()) } else { String::new() }
         )
     }
 }
@@ -119,7 +115,7 @@ pub fn evaluate(hand: &Hand) -> Code {
     // match against number of duplicate ranks
     match SIZE_HAND - num_ranks {
         0 => {
-            return encode(HIGHCARD, 0, 0, MSB5_MASK[ranks]);
+            return encode(HIGHCARD, NULL, NULL, MSB5_MASK[ranks]);
         }
         1 => {
             //println!("{:13b}", ranks);
@@ -206,7 +202,10 @@ fn encode(value: usize, major: usize, minor: usize, kicker: usize) -> Code {
 
 // TODO: for each passed in hand determines its strength code
 fn assign_strength(hands: Vec<&str>) -> HashMap<&str, Code> {
-    unimplemented!();
+    hands.iter().for_each(|s| {
+        //Hand::new(s).
+    });
+    unimplemented!()
 }
 
 #[cfg(test)]
@@ -217,7 +216,16 @@ mod tests {
     fn test_ace_low_straight() {
         let hand = Hand::new("Ad3s2dKhJs5h4d");
         assert_eq!(
-            "Straight 5- -",
+            "Straight 5",
+            Evaluation::decode(evaluate(&hand)).to_string()
+        );
+    }
+
+    #[test]
+    fn test_two_pair_with_triples() {
+        let hand = Hand::new("AdAsKdKhJsJh4d");
+        assert_eq!(
+            "TwoPair AK J", 
             Evaluation::decode(evaluate(&hand)).to_string()
         );
     }

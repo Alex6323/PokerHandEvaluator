@@ -5,7 +5,7 @@ pub const SUITS: [&str; 4] = ["c", "d", "h", "s"];
 pub const COMBS: [&str; 10] = [
     "Highcard",
     "Pair",
-    "Two Pair",
+    "TwoPair",
     "Trips",
     "Straight",
     "Flush",
@@ -56,4 +56,7 @@ pub const JACK: usize = 9;
 pub const QUEEN: usize = 10;
 pub const KING: usize = 11;
 pub const ACE: usize = 12;
+// Represents an empty major/minor rank slot in the evaluation code. Although it sets all bits to 1
+// it doesn't effect the correct order of hands regarding their strength, because for any specific
+// combination type (Pair, TwoPair, ...) either NULL is set or the rank corresponding bit pattern.
 pub const NULL: usize = 0xF;

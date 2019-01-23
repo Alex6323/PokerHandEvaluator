@@ -12,3 +12,11 @@ criterion = "0.2.8"
 [[bench]]
 name = "bench_main"
 harness = false
+
+[lib]
+name = "hand_eval"
+path = "src/lib.rs"
+
+[[bin]]
+name = "poker_eval"
+path = "src/main.rs"
