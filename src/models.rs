@@ -10,6 +10,7 @@ pub trait CardSet {
     fn count(&self) -> usize;
 }
 
+#[derive(Default)]
 pub struct Deck {
     bitmask: Bitmask,
 }
@@ -17,7 +18,7 @@ pub struct Deck {
 impl Deck {
     pub fn new() -> Self {
         Deck {
-            bitmask: 0x000FFFFFFFFFFFFF,
+            bitmask: 0x000F_FFFF_FFFF_FFFF,
         }
     }
 
@@ -37,7 +38,7 @@ impl CardSet for Deck {
     }
 
     fn reset(&mut self) {
-        self.bitmask = 0x000FFFFFFFFFFFFF;
+        self.bitmask = 0x000F_FFFF_FFFF_FFFF;
     }
 
     fn count(&self) -> usize {

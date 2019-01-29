@@ -1,5 +1,5 @@
 [package]
-name = "poker_evaluator2"
+name = "phevor"
 version = "0.1.0"
 authors = ["Alex6323 <Al3k5@protonmail.com>"]
 edition = "2018"
@@ -14,9 +14,9 @@ name = "bench_main"
 harness = false
 
 [lib]
-name = "hand_eval"
+name = "phevor"
 path = "src/lib.rs"
 
 [[bin]]
-name = "poker_eval"
+name = "phevor"
 path = "src/main.rs"

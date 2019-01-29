@@ -60,16 +60,26 @@ impl Display for Evaluation {
             f,
             "{comb}{major}{minor}{kickers}",
             comb = self.get_comb(),
-            major = if self.major != NULL { format!(" {}", self.get_major()) } else { String::new() },
-            minor = if self.minor != NULL { format!(" {}", self.get_minor()) } else { String::new() },
-            kickers = if self.kickers != 0 { format!(" {}", self.get_kickers()) } else { String::new() }
+            major = if self.major != NULL {
+                format!(" {}", self.get_major())
+            } else {
+                String::new()
+            },
+            minor = if self.minor != NULL {
+                format!(" {}", self.get_minor())
+            } else {
+                String::new()
+            },
+            kickers = if self.kickers != 0 {
+                format!(" {}", self.get_kickers())
+            } else {
+                String::new()
+            }
         )
     }
 }
 
-pub fn evaluate(hand: &Hand) -> Code {
-    let bitmask = hand.get_bitmask();
-
+pub fn evaluate(bitmask: u64) -> Code {
     let clubs = get_ranks(bitmask, OFFSET_CLUBS);
     let diamonds = get_ranks(bitmask, OFFSET_DIAMONDS);
     let hearts = get_ranks(bitmask, OFFSET_HEARTS);
@@ -113,20 +123,13 @@ pub fn evaluate(hand: &Hand) -> Code {
     };
 
     // match against number of duplicate ranks
-    match SIZE_HAND - num_ranks {
-        0 => {
-            return encode(HIGHCARD, NULL, NULL, MSB5_MASK[ranks]);
-        }
+    return match SIZE_HAND - num_ranks {
+        0 => encode(HIGHCARD, NULL, NULL, MSB5_MASK[ranks]),
         1 => {
-            //println!("{:13b}", ranks);
             let pair_mask = ranks ^ (clubs ^ diamonds ^ hearts ^ spades);
-            //println!("{:13b}", pair_mask);
             let major = MSB_RANK[pair_mask];
-            //println!("{} => {:b}", major, RANK_MASK[major]);
             let kickers = MSB3_MASK[ranks ^ RANK_MASK[major]];
-            //println!("{:013b}", kickers);
-            //println!("{:032b}", encode(PAIR, major, 0, kickers));
-            return encode(PAIR, major, NULL, kickers);
+            encode(PAIR, major, NULL, kickers)
         }
         2 => {
             let two_pair_mask = ranks ^ (clubs ^ diamonds ^ hearts ^ spades);
@@ -135,7 +138,7 @@ pub fn evaluate(hand: &Hand) -> Code {
                 let minor = MSB_RANK[two_pair_mask ^ MSB1_MASK[two_pair_mask]];
                 let kicker = MSB1_MASK[ranks ^ two_pair_mask];
 
-                return encode(TWO_PAIR, major, minor, kicker);
+                encode(TWO_PAIR, major, minor, kicker)
             } else {
                 let trips_mask = ((clubs & diamonds) | (hearts & spades))
                     & ((clubs & hearts) | (diamonds & spades));
@@ -143,10 +146,10 @@ pub fn evaluate(hand: &Hand) -> Code {
                 let kicker1 = MSB1_MASK[ranks ^ trips_mask];
                 let kicker2 = MSB1_MASK[(ranks ^ trips_mask) ^ kicker1];
 
-                return encode(TRIPS, major, NULL, kicker1 | kicker2);
+                encode(TRIPS, major, NULL, kicker1 | kicker2)
             }
         }
-        n @ _ => {
+        n => {
             let quads_mask = clubs & diamonds & hearts & spades;
 
             if quads_mask != 0 {
@@ -154,7 +157,7 @@ pub fn evaluate(hand: &Hand) -> Code {
                 let major = MSB_RANK[quads_mask];
                 let kicker = MSB1_MASK[ranks ^ quads_mask];
 
-                return encode(QUADS, major, NULL, kicker);
+                encode(QUADS, major, NULL, kicker)
             } else {
                 let two_pair_mask = ranks ^ (clubs ^ diamonds ^ hearts ^ spades);
 
@@ -172,7 +175,7 @@ pub fn evaluate(hand: &Hand) -> Code {
                         //Fullhouse (with 2 triples)
                         let minor = MSB_RANK[trips_mask ^ RANK_MASK[major]];
 
-                        return encode(FULLHOUSE, major, minor, 0);
+                        encode(FULLHOUSE, major, minor, 0)
                     }
                 } else {
                     // Two Pair (with triple pairs)
@@ -180,7 +183,7 @@ pub fn evaluate(hand: &Hand) -> Code {
                     let minor = MSB_RANK[two_pair_mask ^ RANK_MASK[major]];
                     let kicker = MSB1_MASK[(ranks ^ RANK_MASK[major]) ^ RANK_MASK[minor]];
 
-                    return encode(TWO_PAIR, major, minor, kicker);
+                    encode(TWO_PAIR, major, minor, kicker)
                 }
             }
         }
@@ -200,12 +203,51 @@ fn encode(value: usize, major: usize, minor: usize, kicker: usize) -> Code {
         ^ (kicker << OFFSET_KICKER)
 }
 
-// TODO: for each passed in hand determines its strength code
-fn assign_strength(hands: Vec<&str>) -> HashMap<&str, Code> {
-    hands.iter().for_each(|s| {
-        //Hand::new(s).
+pub fn evaluate_all<'a>(hands: &'a Vec<&str>) -> HashMap<&'a str, Code> {
+    assert!(!hands.is_empty());
+
+    let mut evals = HashMap::new();
+
+    hands.iter().for_each(|&hand| {
+        evals.insert(hand, evaluate(Hand::new(hand).get_bitmask()));
     });
-    unimplemented!()
+
+    evals
+}
+
+pub fn order_all_by_code<'a>(hands: &'a Vec<&str>) -> Vec<Vec<String>> {
+    assert!(!hands.is_empty());
+
+    if hands.len() == 1 {
+        return vec![vec![hands[0].to_string()]];
+    }
+
+    let evals = evaluate_all(hands);
+
+    let mut sorted_by_code = vec![];
+    evals.iter().for_each(|(hand, code)| {
+        sorted_by_code.push((hand, code));
+    });
+
+    // create a list of sorted hands, where the strongest comes first
+    sorted_by_code.sort_unstable_by_key(|eval| eval.1);
+    sorted_by_code.reverse();
+
+    let mut outer = vec![];
+    outer.push(vec![sorted_by_code[0].0.to_string()]);
+
+    for i in 1..sorted_by_code.len() {
+        if sorted_by_code[i].1 == sorted_by_code[i - 1].1 {
+            let count = outer.len();
+            let inner = outer.get_mut(count - 1).unwrap();
+            inner.push(sorted_by_code[i].0.to_string());
+        } else {
+            let inner = vec![sorted_by_code[i].0.to_string()];
+            outer.push(inner);
+        }
+    }
+
+    outer
 }
 
 #[cfg(test)]
@@ -225,7 +267,7 @@ mod tests {
     fn test_two_pair_with_triples() {
         let hand = Hand::new("AdAsKdKhJsJh4d");
         assert_eq!(
-            "TwoPair A K J", 
+            "TwoPair A K J",
             Evaluation::decode(evaluate(&hand)).to_string()
         );
     }
