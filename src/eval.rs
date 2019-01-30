@@ -123,7 +123,7 @@ pub fn evaluate(bitmask: u64) -> Code {
     };
 
     // match against number of duplicate ranks
-    return match SIZE_HAND - num_ranks {
+    match SIZE_HAND - num_ranks {
         0 => encode(HIGHCARD, NULL, NULL, MSB5_MASK[ranks]),
         1 => {
             let pair_mask = ranks ^ (clubs ^ diamonds ^ hearts ^ spades);
@@ -170,7 +170,7 @@ pub fn evaluate(bitmask: u64) -> Code {
                         //Fullhouse (with 1 triple and 1 pair)
                         let minor = MSB_RANK[two_pair_mask];
 
-                        return encode(FULLHOUSE, major, minor, 0);
+                        encode(FULLHOUSE, major, minor, 0)
                     } else {
                         //Fullhouse (with 2 triples)
                         let minor = MSB_RANK[trips_mask ^ RANK_MASK[major]];
@@ -187,7 +187,7 @@ pub fn evaluate(bitmask: u64) -> Code {
                 }
             }
         }
-    };
+    }
 }
 
 #[inline]

@@ -1,8 +1,5 @@
-use phevor;
 use phevor::display::*;
-use phevor::eval::*;
 use phevor::file::*;
-use phevor::models::*;
 
 use clap::load_yaml;
 use clap::App;
@@ -13,16 +10,14 @@ fn main() {
 
     let hands = if matches.is_present("file") {
         create_hands_from_file("hands.txt")
+    } else if matches.is_present("hand") {
+        vec![String::from(
+            matches
+                .value_of("hand")
+                .unwrap_or_else(|| panic!("error: cannot read hand")),
+        )]
     } else {
-        if matches.is_present("hand") {
-            vec![String::from(
-                matches
-                    .value_of("hand")
-                    .unwrap_or_else(|| panic!("error: cannot read hand")),
-            )]
-        } else {
-            vec![]
-        }
+        vec![]
     };
 
     if !matches.is_present("rank") {
