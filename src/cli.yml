@@ -9,14 +9,14 @@ args:
         conflicts_with: file
         conflicts_with: rank
         conflicts_with: all
-        help: Our hand (consisting of 2 hole and 5 board cards) to evaluate. Example - AsAcKhKdQcQdJs
+        help: A hand (consisting of 2 hole and 5 board cards) to evaluate.
     - file:
         short: f
         long: file
         required: false
         takes_value: true
         conflicts_with: hand
-        help: A file containing hands to evaluate.
+        help: A file containing hands (one per line) to evaluate.
     - rank:
         short: r
         long: rank
@@ -25,7 +25,7 @@ args:
         takes_value: false
         conflicts_with: hand
         conflicts_with: all
-        help: If set prints the ranking of hands instead of their evaluations.
+        help: Prints the ranking of hands instead of their evaluations.
     - all:
         short: a
         long: all
@@ -34,4 +34,4 @@ args:
         takes_value: false
         conflicts_with: hand
         conflicts_with: rank
-        help: If set shows evalations and the ranking of hands.
+        help: Shows evaluations and the ranking of hands.

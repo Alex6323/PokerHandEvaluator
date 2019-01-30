@@ -2,7 +2,7 @@ pub const RANKS: [&str; 13] = [
     "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A",
 ];
 pub const SUITS: [&str; 4] = ["c", "d", "h", "s"];
-pub const COMBS: [&str; 10] = [
+pub const TYPES: [&str; 10] = [
     "Highcard",
     "Pair",
     "TwoPair",
@@ -20,19 +20,24 @@ pub const RANK_MASK: [usize; 13] = [
     0x1000,
 ];
 
+// game related
 pub const NUM_CARDS: usize = 52;
 pub const NUM_RANKS: usize = 13;
 pub const NUM_SUITS: usize = 4;
 pub const SIZE_HAND: u8 = 7;
+
+// bitmask related
+pub const MASK_SUIT: u64 = 0x1FFF;
 pub const OFFSET_CLUBS: u8 = 0;
 pub const OFFSET_DIAMONDS: u8 = 13;
 pub const OFFSET_HEARTS: u8 = 26;
 pub const OFFSET_SPADES: u8 = 39;
-pub const MASK_SUIT: u64 = 0x1FFF;
-pub const OFFSET_COMB: usize = 24;
+pub const OFFSET_TYPE: usize = 24;
 pub const OFFSET_MAJOR: usize = 20;
 pub const OFFSET_MINOR: usize = 16;
 pub const OFFSET_KICKER: usize = 0;
+
+// hand types
 pub const HIGHCARD: usize = 0;
 pub const PAIR: usize = 1;
 pub const TWO_PAIR: usize = 2;
@@ -43,6 +48,8 @@ pub const FULLHOUSE: usize = 6;
 pub const QUADS: usize = 7;
 pub const STRAIGHT_FLUSH: usize = 8;
 pub const ROYAL_FLUSH: usize = 9;
+
+// ranks
 pub const TWO: usize = 0;
 pub const THREE: usize = 1;
 pub const FOUR: usize = 2;

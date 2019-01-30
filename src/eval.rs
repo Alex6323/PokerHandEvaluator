@@ -7,37 +7,37 @@ use crate::{big_luts::*, constants::*, models::*};
 pub type Code = usize;
 
 pub struct Evaluation {
-    comb: usize,
-    major: usize,
-    minor: usize,
+    hand_type: usize,
+    major_rank: usize,
+    minor_rank: usize,
     kickers: usize,
 }
 
 impl Evaluation {
     pub fn decode(code: Code) -> Self {
         Evaluation {
-            comb: (code >> OFFSET_COMB) & 0xF,
-            major: (code >> OFFSET_MAJOR) & 0xF,
-            minor: (code >> OFFSET_MINOR) & 0xF,
+            hand_type: (code >> OFFSET_TYPE) & 0xF,
+            major_rank: (code >> OFFSET_MAJOR) & 0xF,
+            minor_rank: (code >> OFFSET_MINOR) & 0xF,
             kickers: code & 0x1FFF,
         }
     }
 
     pub fn get_comb(&self) -> &'static str {
-        COMBS[self.comb]
+        TYPES[self.hand_type]
     }
 
     pub fn get_major(&self) -> &'static str {
-        if self.major != NULL {
-            RANKS[self.major]
+        if self.major_rank != NULL {
+            RANKS[self.major_rank]
         } else {
             ""
         }
     }
 
     pub fn get_minor(&self) -> &'static str {
-        if self.minor != NULL {
-            RANKS[self.minor]
+        if self.minor_rank != NULL {
+            RANKS[self.minor_rank]
         } else {
             ""
         }
@@ -60,12 +60,12 @@ impl Display for Evaluation {
             f,
             "{comb}{major}{minor}{kickers}",
             comb = self.get_comb(),
-            major = if self.major != NULL {
+            major = if self.major_rank != NULL {
                 format!(" {}", self.get_major())
             } else {
                 String::new()
             },
-            minor = if self.minor != NULL {
+            minor = if self.minor_rank != NULL {
                 format!(" {}", self.get_minor())
             } else {
                 String::new()
@@ -79,6 +79,7 @@ impl Display for Evaluation {
     }
 }
 
+// Based off of PokerStove (Copyright (c) 2012, Andrew C. Prock.)
 pub fn evaluate(bitmask: u64) -> Code {
     let clubs = get_ranks(bitmask, OFFSET_CLUBS);
     let diamonds = get_ranks(bitmask, OFFSET_DIAMONDS);
@@ -106,17 +107,21 @@ pub fn evaluate(bitmask: u64) -> Code {
 
             if major != 0 {
                 if major == ACE {
+                    // Royal Flush
                     return encode(ROYAL_FLUSH, NULL, NULL, 0);
                 } else {
+                    // Straight Flush
                     return encode(STRAIGHT_FLUSH, major, NULL, 0);
                 }
             } else {
+                // Flush
                 return encode(FLUSH, NULL, NULL, MSB5_MASK[suit]);
             }
         } else {
             let major = STRAIGHT_TYPE[ranks];
 
             if major != 0 {
+                // Straight
                 return encode(STRAIGHT, major, NULL, 0);
             };
         };
@@ -124,11 +129,13 @@ pub fn evaluate(bitmask: u64) -> Code {
 
     // match against number of duplicate ranks
     match SIZE_HAND - num_ranks {
-        0 => encode(HIGHCARD, NULL, NULL, MSB5_MASK[ranks]),
+        0 => encode(HIGHCARD, NULL, NULL, MSB5_MASK[ranks]), // Highcard
         1 => {
             let pair_mask = ranks ^ (clubs ^ diamonds ^ hearts ^ spades);
             let major = MSB_RANK[pair_mask];
             let kickers = MSB3_MASK[ranks ^ RANK_MASK[major]];
+
+            // Pair
             encode(PAIR, major, NULL, kickers)
         }
         2 => {
@@ -138,6 +145,7 @@ pub fn evaluate(bitmask: u64) -> Code {
                 let minor = MSB_RANK[two_pair_mask ^ MSB1_MASK[two_pair_mask]];
                 let kicker = MSB1_MASK[ranks ^ two_pair_mask];
 
+                // Two-Pair
                 encode(TWO_PAIR, major, minor, kicker)
             } else {
                 let trips_mask = ((clubs & diamonds) | (hearts & spades))
@@ -146,6 +154,7 @@ pub fn evaluate(bitmask: u64) -> Code {
                 let kicker1 = MSB1_MASK[ranks ^ trips_mask];
                 let kicker2 = MSB1_MASK[(ranks ^ trips_mask) ^ kicker1];
 
+                // Three-of-a-kind
                 encode(TRIPS, major, NULL, kicker1 | kicker2)
             }
         }
@@ -153,10 +162,10 @@ pub fn evaluate(bitmask: u64) -> Code {
             let quads_mask = clubs & diamonds & hearts & spades;
 
             if quads_mask != 0 {
-                //Quads
                 let major = MSB_RANK[quads_mask];
                 let kicker = MSB1_MASK[ranks ^ quads_mask];
 
+                // Four-of-a-kind
                 encode(QUADS, major, NULL, kicker)
             } else {
                 let two_pair_mask = ranks ^ (clubs ^ diamonds ^ hearts ^ spades);
@@ -167,22 +176,22 @@ pub fn evaluate(bitmask: u64) -> Code {
                     let major = MSB_RANK[trips_mask];
 
                     if two_pair_mask != 0 {
-                        //Fullhouse (with 1 triple and 1 pair)
                         let minor = MSB_RANK[two_pair_mask];
 
+                        // Fullhouse (with 1 triple and 1 pair)
                         encode(FULLHOUSE, major, minor, 0)
                     } else {
-                        //Fullhouse (with 2 triples)
                         let minor = MSB_RANK[trips_mask ^ RANK_MASK[major]];
 
+                        // Fullhouse (with 2 triples)
                         encode(FULLHOUSE, major, minor, 0)
                     }
                 } else {
-                    // Two Pair (with triple pairs)
                     let major = MSB_RANK[two_pair_mask];
                     let minor = MSB_RANK[two_pair_mask ^ RANK_MASK[major]];
                     let kicker = MSB1_MASK[(ranks ^ RANK_MASK[major]) ^ RANK_MASK[minor]];
 
+                    // Two Pair (with 3 pairs)
                     encode(TWO_PAIR, major, minor, kicker)
                 }
             }
@@ -197,7 +206,7 @@ fn get_ranks(bitmask: Bitmask, offset_suit: u8) -> usize {
 
 #[inline]
 fn encode(value: usize, major: usize, minor: usize, kicker: usize) -> Code {
-    (value << OFFSET_COMB)
+    (value << OFFSET_TYPE)
         ^ (major << OFFSET_MAJOR)
         ^ (minor << OFFSET_MINOR)
         ^ (kicker << OFFSET_KICKER)
@@ -251,19 +260,16 @@ mod tests {
 
     #[test]
     fn test_ace_low_straight() {
-        let hand = Hand::new("Ad3s2dKhJs5h4d");
-        assert_eq!(
-            "Straight 5",
-            Evaluation::decode(evaluate(&hand)).to_string()
-        );
+        let hand = Hand::new("Ad3s2dKhJs5h4d").get_bitmask();
+        assert_eq!("Straight 5", Evaluation::decode(evaluate(hand)).to_string());
     }
 
     #[test]
     fn test_two_pair_with_triples() {
-        let hand = Hand::new("AdAsKdKhJsJh4d");
+        let hand = Hand::new("AdAsKdKhJsJh4d").get_bitmask();
         assert_eq!(
             "TwoPair A K J",
-            Evaluation::decode(evaluate(&hand)).to_string()
+            Evaluation::decode(evaluate(hand)).to_string()
         );
     }
 }
