@@ -203,46 +203,41 @@ fn encode(value: usize, major: usize, minor: usize, kicker: usize) -> Code {
         ^ (kicker << OFFSET_KICKER)
 }
 
-pub fn evaluate_all<'a>(hands: &'a Vec<&str>) -> HashMap<&'a str, Code> {
+pub fn evaluate_hands(hands: &Vec<String>) -> HashMap<&String, Code> {
     assert!(!hands.is_empty());
 
-    let mut evals = HashMap::new();
+    let mut evals = HashMap::with_capacity(hands.len());
 
-    hands.iter().for_each(|&hand| {
-        evals.insert(hand, evaluate(Hand::new(hand).get_bitmask()));
+    hands.iter().for_each(|hand| {
+        let eval = evaluate(Hand::new(&hand).get_bitmask());
+        evals.insert(hand, eval);
     });
 
     evals
 }
 
-pub fn order_all_by_code<'a>(hands: &'a Vec<&str>) -> Vec<Vec<String>> {
-    assert!(!hands.is_empty());
-
-    if hands.len() == 1 {
-        return vec![vec![hands[0].to_string()]];
-    }
-
-    let evals = evaluate_all(hands);
+pub fn rank_hands(evals: HashMap<&String, Code>) -> Vec<Vec<&String>> {
+    assert!(!evals.is_empty());
 
     let mut sorted_by_code = vec![];
-    evals.iter().for_each(|(hand, code)| {
+    evals.iter().for_each(|(&hand, &code)| {
         sorted_by_code.push((hand, code));
     });
 
     // create a list of sorted hands, where the strongest comes first
-    sorted_by_code.sort_unstable_by_key(|eval| eval.1);
+    sorted_by_code.sort_unstable_by_key(|&eval| eval.1);
     sorted_by_code.reverse();
 
     let mut outer = vec![];
-    outer.push(vec![sorted_by_code[0].0.to_string()]);
+    outer.push(vec![sorted_by_code[0].0]);
 
     for i in 1..sorted_by_code.len() {
         if sorted_by_code[i].1 == sorted_by_code[i - 1].1 {
             let count = outer.len();
             let inner = outer.get_mut(count - 1).unwrap();
-            inner.push(sorted_by_code[i].0.to_string());
+            inner.push(sorted_by_code[i].0);
         } else {
-            let inner = vec![sorted_by_code[i].0.to_string()];
+            let inner = vec![sorted_by_code[i].0];
             outer.push(inner);
         }
     }

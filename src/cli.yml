@@ -1,0 +1,24 @@
+name: phevor
+version: "0.1.0"
+author: /alex/
+about: A fast Poker hand evaluator.
+args:
+    - hand:
+        required: false
+        takes_value: true
+        help: Our hand (consisting of 2 hole and 5 board cards) to evaluate. Example - AsAcKhKdQcQdJs
+        conflicts_with: file
+    - file:
+        short: f
+        long: file
+        required: false
+        takes_value: true
+        help: A file containing hands to evaluate.
+        conflicts_with: hand
+    - rank:
+        short: r
+        long: rank
+        required: false
+        takes_value: false
+        help: Sets whether the ranking of hands instead of their evaluations should be printed out.
+        conflicts_with: hand

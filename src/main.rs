@@ -1,162 +1,48 @@
 use phevor;
+use phevor::display::*;
 use phevor::eval::*;
 use phevor::models::*;
 
-use std::time::Instant;
+use clap::load_yaml;
+use clap::App;
 
-fn print_all_evals(hands: &Vec<&str>) {
-    let evals = evaluate_all(&hands);
-    evals.iter().for_each(|(hand, &code)| {
-        println!("{} => {}", hand, Evaluation::decode(code));
-    })
-}
-
-fn print_all_hands_ordered(hands: &Vec<&str>) {
-    let ordered_hands = order_all_by_code(&hands);
-    ordered_hands.iter().enumerate().for_each(|(i, hands)| {
-        print!("{:02}: ", i);
-        println!("{}", hands.join(", "));
-    });
-}
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 fn main() {
-    // Royal Flush
-    let hand = Hand::new("KcQcJcTcAc2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
 
-    // Straight Flush
-    let hand = Hand::new("KcQcJcTc9c2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
+    let hands = if matches.is_present("file") {
+        create_hands_from_file("hands.txt")
+    } else {
+        if matches.is_present("hand") {
+            vec![String::from(
+                matches
+                    .value_of("hand")
+                    .unwrap_or_else(|| panic!("error: cannot read hand")),
+            )]
+        } else {
+            vec![]
+        }
+    };
 
-    // Quads (1 quad, 3 singles)
-    let hand = Hand::new("KcKdKsKh9c2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Quads (1 quad, 1 trip)
-    let hand = Hand::new("KcKdKsKh2c2d2s");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Quads (1 quad, 1 pair, 1 single)
-    let hand = Hand::new("KcKdKsKh9c3d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Fullhouse (1 trip - 1 pair)
-    let hand = Hand::new("KcKdKsQhQc2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Fullhouse (2 trips)
-    let hand = Hand::new("KcKdKsQh3c3c3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Flush
-    let hand = Hand::new("KcQcJcTc8c2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Straight
-    let hand = Hand::new("KcQhJcTs9c2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Straight (Ace low)
-    let hand = Hand::new("Ac2h5cTs3cQd4d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Trips
-    let hand = Hand::new("AcAsAhTh8s2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // TwoPair (2 pairs, 3 singles)
-    let hand = Hand::new("AcAsThTc8s2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // TwoPair (3 pairs, 1 single)
-    let hand = Hand::new("AcAsThTc8s8d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Pair
-    let hand = Hand::new("AcAsJhTc8s2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    // Highcard
-    let hand = Hand::new("KcQsJhTh8s2d3d");
-    println!(
-        "{} => {}",
-        hand,
-        Evaluation::decode(evaluate(hand.get_bitmask()))
-    );
-
-    let mut hands = vec![];
-    hands.push("KcQsJhTh8s2d3d");
-    hands.push("AcAsJhTc8s2d3d");
-    hands.push("AcAsJcTh8s5d3d");
-
-    println!();
     print_all_evals(&hands);
+    print_all_hands_ranked(&hands);
+}
 
-    println!();
-    print_all_hands_ordered(&hands);
+pub fn create_hands_from_file(file: &str) -> Vec<String> {
+    let mut hands = vec![];
+    let buffered = BufReader::new(File::open(file).expect("File does not exist."));
 
-    let hand_bitmask = Hand::new("KcQsJhTh8s2d3d").get_bitmask();
-    let start = Instant::now();
-    evaluate(hand_bitmask);
-    let stop = start.elapsed();
-    println!(
-        "{:.9} seconds",
-        f64::from(stop.subsec_nanos()) / 1_000_000_000.
-    );
+    buffered
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| {
+            hands.push(line);
+        });
+
+    hands
 }
