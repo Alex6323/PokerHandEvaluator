@@ -11,9 +11,8 @@ pub fn print_all_hands_ranked(hands: &Vec<String>) {
     let ranked_hands = rank_hands(evaluate_hands(hands));
     ranked_hands.into_iter().enumerate().for_each(|(i, hands)| {
         print!("{:02}: ", i);
-        //println!("{}", hands.join(", "));
-        hands.iter().for_each(|h| {
-            print!("{}, ", h);
+        hands.iter().enumerate().for_each(|(j, h)| {
+            print!("{}{}", if j != 0 { ", " } else { "" }, h);
         });
         println!();
     });

@@ -6,19 +6,32 @@ args:
     - hand:
         required: false
         takes_value: true
-        help: Our hand (consisting of 2 hole and 5 board cards) to evaluate. Example - AsAcKhKdQcQdJs
         conflicts_with: file
+        conflicts_with: rank
+        conflicts_with: all
+        help: Our hand (consisting of 2 hole and 5 board cards) to evaluate. Example - AsAcKhKdQcQdJs
     - file:
         short: f
         long: file
         required: false
         takes_value: true
-        help: A file containing hands to evaluate.
         conflicts_with: hand
+        help: A file containing hands to evaluate.
     - rank:
         short: r
         long: rank
         required: false
+        requires: file
         takes_value: false
-        help: Sets whether the ranking of hands instead of their evaluations should be printed out.
         conflicts_with: hand
+        conflicts_with: all
+        help: If set prints the ranking of hands instead of their evaluations.
+    - all:
+        short: a
+        long: all
+        required: false
+        requires: file
+        takes_value: false
+        conflicts_with: hand
+        conflicts_with: rank
+        help: If set shows evalations and the ranking of hands.

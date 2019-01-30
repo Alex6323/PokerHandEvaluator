@@ -2,6 +2,7 @@ pub mod big_luts;
 pub mod constants;
 pub mod display;
 pub mod eval;
+pub mod file;
 pub mod models;
 
 //use std::time::Instant;
