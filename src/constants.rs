@@ -10,8 +10,8 @@ pub const COMBS: [&str; 10] = [
     "Straight",
     "Flush",
     "Fullhouse",
-    "StraightFlush",
     "Quads",
+    "StraightFlush",
     "RoyalFlush",
 ];
 
@@ -40,8 +40,8 @@ pub const TRIPS: usize = 3;
 pub const STRAIGHT: usize = 4;
 pub const FLUSH: usize = 5;
 pub const FULLHOUSE: usize = 6;
-pub const STRAIGHT_FLUSH: usize = 7;
-pub const QUADS: usize = 8;
+pub const QUADS: usize = 7;
+pub const STRAIGHT_FLUSH: usize = 8;
 pub const ROYAL_FLUSH: usize = 9;
 pub const TWO: usize = 0;
 pub const THREE: usize = 1;

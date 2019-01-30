@@ -29,7 +29,10 @@ fn main() {
         }
     };
 
+    println!("evaluations:");
     print_all_evals(&hands);
+    println!();
+    println!("ranking:");
     print_all_hands_ranked(&hands);
 }
 
