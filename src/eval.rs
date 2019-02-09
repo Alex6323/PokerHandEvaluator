@@ -3,7 +3,7 @@ use std::{
     fmt::{self, Display, Formatter},
 };
 
-use crate::{big_luts::*, constants::*, models::*};
+use crate::{constants::*, luts::*, models::*};
 pub type Code = usize;
 
 pub struct Evaluation {

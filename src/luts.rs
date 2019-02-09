@@ -1,4 +1,4 @@
-// For any 16bit sequence stores the number of on-bits
+// For any 13bit sequence stores the number of on-bits
 pub const NUM_ONBITS: [u8; 8192] = [
     0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
     1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
@@ -528,7 +528,7 @@ pub const STRAIGHT_TYPE: [usize; 8192] = [
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
 ];
 
-// For any 16bit sequence stores the rank value of the card represented by the most significant bit.
+// For any 13bit sequence stores the rank value of the card represented by the most significant bit.
 // 000 -1 => ERROR (but because this can never happen, we can savely change that to 0)
 // 001  0 => "2"
 // 010  1 => "3"
@@ -871,7 +871,7 @@ pub const MSB_RANK: [usize; 8192] = [
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
 ];
 
-// For any 16bit sequence representing the ranks of a suit stores the decimal value of the 3 most
+// For any 13bit sequence representing the ranks of a suit stores the decimal value of the 3 most
 // significant bits.
 // Example: 00110010 10100011 => 00100000 00000000
 pub const MSB1_MASK: [usize; 8192] = [
@@ -1377,7 +1377,7 @@ pub const MSB1_MASK: [usize; 8192] = [
     4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096,
     4096, 4096, 4096, 4096, 4096,
 ];
-// For any 16bit sequence representing the ranks of a suit stores the decimal value of the 3 most
+// For any 13bit sequence representing the ranks of a suit stores the decimal value of the 3 most
 // significant bits.
 // Example: 00110010 10100011 => 00110010 00000000
 pub const MSB3_MASK: [usize; 8192] = [
@@ -1884,7 +1884,7 @@ pub const MSB3_MASK: [usize; 8192] = [
     7168, 7168, 7168, 7168, 7168, 7168, 7168, 7168, 7168, 7168, 7168, 7168,
 ];
 
-// For any 16bit sequence representing the ranks of a suit stores the decimal value of the 5 most
+// For any 13bit sequence representing the ranks of a suit stores the decimal value of the 5 most
 // significant bits.
 // Example: 00110010 10100011 => 00110010 10100000
 pub const MSB5_MASK: [usize; 8192] = [

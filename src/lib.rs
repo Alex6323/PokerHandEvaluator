@@ -1,4 +1,4 @@
-pub mod big_luts;
+pub mod luts;
 pub mod constants;
 pub mod display;
 pub mod eval;
@@ -51,7 +51,7 @@ mod tests {
     );
 
     // Quads (1 quad, 1 pair, 1 single)
-    let hand = Hand::new("KcKdKsKh9c3d3d");
+    let hand = Hand::new("KcKdKsKh9c3d3c");
     println!(
         "{} => {}",
         hand,
@@ -67,7 +67,7 @@ mod tests {
     );
 
     // Fullhouse (2 trips)
-    let hand = Hand::new("KcKdKsQh3c3c3d");
+    let hand = Hand::new("KcKdKsQh3c3h3d");
     println!(
         "{} => {}",
         hand,
